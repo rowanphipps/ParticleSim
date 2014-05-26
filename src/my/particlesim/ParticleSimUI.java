@@ -19,7 +19,7 @@ import javax.swing.Timer;
 public class ParticleSimUI extends javax.swing.JFrame {
     
 //    private ParticleCollection particles;
-    private ArrayList<Particle> particles = new ArrayList<Particle>();
+//    private ArrayList<Particle> particles = new ArrayList<Particle>();
     private static final int fps = 16;//16
     private static final int PhysDt = 1;// 1
 //    private Timer t = new Timer
@@ -176,12 +176,11 @@ public class ParticleSimUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void resetButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_resetButtonMouseClicked
-        // TODO add your handling code here:
-        worldSpace.particles = new ArrayList<Particle>();
+        worldSpace.clear();
     }//GEN-LAST:event_resetButtonMouseClicked
 
     private void worldSpaceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_worldSpaceMouseClicked
-        worldSpace.particles.add(new Particle(massSlider.getValue(), chargeSlider.getValue(),evt.getPoint()));
+        worldSpace.add(new Particle(massSlider.getValue(), chargeSlider.getValue(),evt.getPoint()));
     }//GEN-LAST:event_worldSpaceMouseClicked
 
     private void resetChargeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_resetChargeMouseClicked

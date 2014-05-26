@@ -8,40 +8,52 @@ package my.particlesim;
 
 import java.awt.Graphics;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  *
  * @author rowan
  */
 public class MyCanvas extends java.awt.Canvas {
-    public ArrayList<Particle> particles = new ArrayList<Particle>();
+    private ArrayList<Particle> particles = new ArrayList<Particle>();
     
 //    public MyCanvas () {
 ////        super.Canvas();
 //        this.createBufferStrategy(5);
 //    }
     
+    /**
+     * Paints the particles to the screen
+     */
     public void paint(Graphics g) {
-        for (Particle p : particles) {
+        particles.stream().forEach((p) -> {
             p.draw(g);
-        }
+        });
     }
     
+    /**
+     * Updates physics for all of the particles.
+     * @param deltaT Physics delta t
+     */
     public void updateP(int deltaT) {
-//        for (Particle p : particles) {
-//            p.update(particles, deltaT, this.getWidth(), this.getHeight());
-//        }
-        
-        for (Iterator<Particle> it = particles.iterator(); it.hasNext();) {
-            Particle p = it.next();
+        particles.parallelStream().forEach((p) -> {
             p.update(particles, deltaT, this.getWidth(), this.getHeight());
-        }
-        for (Iterator<Particle> it = particles.iterator(); it.hasNext();) {
-            Particle p = it.next();
-            p.move();
-        }
+        });
+        particles.parallelStream().forEach((p) -> {
+            p.move(this.getWidth(), this.getHeight());
+        });
+    } 
+    
+    /**
+     * Adds a particle to the canvas
+     */
+    public void add (Particle part) {
+        this.particles.add(part);
     }
     
-    
+    /**
+     * Removes all particles from the canvas
+     */
+    public void clear () {
+        this.particles = new ArrayList<Particle>();
+    }
 }
