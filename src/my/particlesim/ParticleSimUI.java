@@ -8,8 +8,6 @@ package my.particlesim;
 
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import javax.swing.Timer;
 
 /**
@@ -33,25 +31,18 @@ public class ParticleSimUI extends javax.swing.JFrame {
         
 //        Timer t = new Timer(1000/fps, particles);
         
+        // physics timer
         Timer t;
-        t = new Timer(PhysDt, new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                
-                Graphics g = worldSpace.getGraphics();
-                worldSpace.updateP(PhysDt);
-                worldSpace.paint(g);
-
-            }
+        t = new Timer(PhysDt, (ActionEvent evt) -> {
+            Graphics g = worldSpace.getGraphics();
+            worldSpace.updateP(PhysDt);
         });
         
+        // graphics timer
         Timer tg;
-        tg = new Timer(fps, new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                
-                Graphics g = worldSpace.getGraphics();
-                worldSpace.update(g);
-                
-            }
+        tg = new Timer(fps, (ActionEvent evt) -> {
+            Graphics g = worldSpace.getGraphics();
+            worldSpace.update(g);
         });
         
         tg.start();
@@ -79,6 +70,7 @@ public class ParticleSimUI extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        setPreferredSize(new java.awt.Dimension(1400, 800));
 
         jLabel3.setText("Mass");
 
@@ -151,8 +143,7 @@ public class ParticleSimUI extends javax.swing.JFrame {
                         .addComponent(worldSpace, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(20, 20, 20)
-                        .addComponent(filler2, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(filler2, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(massSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -177,6 +168,7 @@ public class ParticleSimUI extends javax.swing.JFrame {
 
     private void resetButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_resetButtonMouseClicked
         worldSpace.clear();
+//        worldSpace.log();
     }//GEN-LAST:event_resetButtonMouseClicked
 
     private void worldSpaceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_worldSpaceMouseClicked
