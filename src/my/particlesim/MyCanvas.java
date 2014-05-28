@@ -9,6 +9,7 @@ package my.particlesim;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 /**
@@ -22,10 +23,9 @@ public class MyCanvas extends java.awt.Canvas {
     private int height = 0;
     private Graphics buffG;
     
-    public MyCanvas () {
-////        super.Canvas();
-//        this.buffer = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
-    }
+//    public MyCanvas () {
+//        
+//    }
     
     /**
      * Paints the particles to the screen
@@ -48,17 +48,21 @@ public class MyCanvas extends java.awt.Canvas {
         particles.parallelStream().forEach((p) -> {
             p.update(particles, deltaT, this.getWidth(), this.getHeight());
         });
-        particles.parallelStream().forEach((p) -> {
+        particles.stream().forEach((p) -> {
             p.move(this.getWidth(), this.getHeight());
         });
     } 
     
+    /**
+     * Updates graphics
+     */
     @Override
     public void update(Graphics g) {
         if (this.width != this.getWidth() || this.height != this.getHeight()) {
             this.width = this.getWidth();
             this.height = this.getHeight();
-            this.buffer = createImage(width, height);
+//            this.buffer = createImage(width, height);
+            this.buffer = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
             this.buffG = this.buffer.getGraphics();
         }
         
@@ -74,6 +78,7 @@ public class MyCanvas extends java.awt.Canvas {
      * Adds a particle to the canvas
      */
     public void add (Particle part) {
+        part.setId(this.particles.size());
         this.particles.add(part);
     }
     
@@ -84,8 +89,8 @@ public class MyCanvas extends java.awt.Canvas {
         this.particles = new ArrayList<>();
     }
     
-//    
-//    public void log() {
-//        System.out.println(this.getWidth() + " " + this.getHeight());
-//    }
+    
+    public void log() {
+        System.out.println(particles.size());
+    }
 }

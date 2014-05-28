@@ -173,6 +173,7 @@ public class ParticleSimUI extends javax.swing.JFrame {
 
     private void worldSpaceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_worldSpaceMouseClicked
         worldSpace.add(new Particle(massSlider.getValue(), chargeSlider.getValue(),evt.getPoint()));
+        worldSpace.log();
     }//GEN-LAST:event_worldSpaceMouseClicked
 
     private void resetChargeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_resetChargeMouseClicked
@@ -202,13 +203,7 @@ public class ParticleSimUI extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ParticleSimUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ParticleSimUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ParticleSimUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(ParticleSimUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
@@ -217,6 +212,7 @@ public class ParticleSimUI extends javax.swing.JFrame {
         
         
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new ParticleSimUI().setVisible(true);
             }
