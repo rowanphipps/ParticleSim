@@ -17,7 +17,7 @@ public class Particle {
     private final double k = 0.025;     // coulomb's constant
     private final double g = 0.0005;    // universal gravitational constant
     private final double c = 0.5;   // coefficient of restitution for collisions with walls
-    private final double cR = 0.999999;  // co. of r. for collisions with other particles
+    private final double cR = 0.005;  // co. of r. for collisions with other particles
     private final short mass;
     private final short charge;
     private Color col;
@@ -89,57 +89,37 @@ public class Particle {
     
     /**
      * Calculates physics for the particle
-     * sets the dy and dx based on electrostatic attraction and the current velocity
+     * modifies vx and vy based on electrostatic attraction, gravity and collisions
      * @param others The other particles on the canvas
      * @param dt The physics delta t
      * @param width The current width of the world
      * @param height The current height of the world
+     * @param gravity Sets whether or not to simulate gravity
+     * @param electro Sets whether or not to simulate electrostatic forces
+     * @param collision Sets whether or not particles collide
      */
-    public void update(ArrayList<Particle> others, int dt, int width, int height) {
+    public void update(ArrayList<Particle> others, int dt, int width, int height,
+            boolean gravity, boolean electro, boolean collision) {
         double T = (1.0 / dt);
         this.dt = T;
         for (int i = this.id+1; i < others.size(); i++) {
             Particle other = others.get(i);
-            double d = (
+            double d = Math.sqrt(
                     Math.pow(this.x - other.x, 2) +
                             Math.pow(this.y-other.y, 2));
             
-            if (false){//(this.hasCollided(other, d)) {
-                
-                /* 
-                if two particles are inside each other then all this will do
-                is to dampen the velocities of the particles.  It does not currently
-                turn the particles into solid objects.  this is a problem.
-                */
-//                double nvx = -(this.mass*this.vx + other.mass*other.vx
-//                        + other.getMass() * cR * (other.vx - this.vx))
-//                        /(this.mass + other.getMass());
-//                double nvy = -(this.mass*this.vy + other.mass*other.vy
-//                        + other.getMass() * cR * (other.vy - this.vy))
-//                        / (this.mass + other.getMass());
-//                dx = (T * vx) * Math.signum(nvx);
-//                dy = (T * vy) * Math.signum(nvy);
-//                vy = nvy;
-//                vx = nvx;
-                return;
+            if (collision && this.hasCollided(other, d)) {
+                this.collide(other, d);
+//                other.collide(this, d);
             }
-            else {
-//                System.out.println(d);
-                double fy = this.k * (this.y-other.y) * ((this.charge * other.getCharge())
-                        / Math.pow(d, 1.5));
-                double fx = this.k * (this.x-other.x) * ((this.charge * other.getCharge())
-                        / Math.pow(d, 1.5));
-                
-                this.vx += T * (fx/this.mass);
-                this.vy += T * (fy/this.mass);
-                dx += T * vx;
-                dy += T * vy;
-//                other.dx -= T * (fx/other.getMass()) * T;
-//                other.dy -= T * (fy/other.getMass()) * T;
-                other.applyForce(fx, fy, T);
-                
+             
+            if (gravity) {
                 doGravity(d, other, T);
             }
+            if (electro) {
+                doElectro(d, other, T);
+            }
+            
         }
     }
     
@@ -156,31 +136,69 @@ public class Particle {
     } 
     
     /**
-     * Simulates gravity and updates the values dx and dy appropriately
+     * Simulates gravity and updates the values vx and vy appropriately
      * @param d The distance between the two particles
      * @param other The other particle
      * @param T The physics delta t
      */
     private void doGravity(double d, Particle other, double T) {
         double fy = this.g * (this.y-other.y) * (-(this.mass * other.getMass())
-                / Math.pow(d, 1.5));
+                / Math.pow(d, 2));
         double fx = this.g * (this.x-other.x) * (-(this.mass * other.getMass())
-                / Math.pow(d, 1.5));
-        
-        
+                / Math.pow(d, 2));
+     
+        this.applyForce(fx, fy, dt);
+        other.applyForce(-fx, -fy, dt);
+    }
+    
+    /**
+     * Simulates electro static attraction
+     * @param d The distance between the two particles
+     * @param other The other particle
+     * @param T The physics delta t
+     */
+    private void doElectro(double d, Particle other, double T) {
+        double fy = this.k * (this.y-other.y) * ((this.charge * other.getCharge())
+                / Math.pow(d, 2));
+        double fx = this.k * (this.x-other.x) * ((this.charge * other.getCharge())
+                / Math.pow(d, 2));
+
         this.vx += T * (fx/this.mass);
         this.vy += T * (fy/this.mass);
-        dx += T * vx;
-        dy += T * vy;
-        other.applyForce(-fx, -fy, T);
-//        other.dx -= T * (fx/other.getMass()) * T;
-//        other.dy -= T * (fy/other.getMass()) * T;
+//        dx += T * vx;
+//        dy += T * vy;
         
-
-//        this.vx += T * (fx/this.mass);
-//        this.vy += T * (fy/this.mass);
-//        this.x += vx * T;
-//        this.y += vy * T;
+        other.applyForce(-fx, -fy, T);
+    }
+    
+    public void collide(Particle other, double d) {
+        /* 
+        if two particles are inside each other then all this will do
+        is to dampen the velocities of the particles.  It does not currently
+        turn the particles into solid objects.  this is a problem.
+        */
+//        double nvx = (this.mass*this.vx + other.mass*other.vx
+//                + other.getMass() * cR * (other.vx - this.vx))
+//                /(this.mass + other.getMass());
+//        double nvy = (this.mass*this.vy + other.mass*other.vy
+//                + other.getMass() * cR * (other.vy - this.vy))
+//                / (this.mass + other.getMass());
+//        
+//        double newNetV = Math.sqrt(Math.pow(nvx, 2) + Math.pow(nvy,2));
+//        
+//        double overLap = d - (this.size/2 - other.getSize()/2);
+//        double moveBy = overLap * (this.getMass() / (this.getMass() + other.getMass()));
+//        dx += Math.signum(nvx) * moveBy * (nvx / newNetV);
+//        dy += Math.signum(nvy) * moveBy * (nvy / newNetV);
+//        vy = nvy;
+//        vx = nvx;
+        double fy = this.cR * (this.y-other.y) * ((this.size * other.getSize())
+                / Math.pow(d, 0.5));
+        double fx = this.cR * (this.x-other.x) * ((this.size * other.getSize())
+                / Math.pow(d, 0.5));
+     
+        this.applyForce(fx, fy, dt);
+        other.applyForce(-fx, -fy, dt);
     }
     
     /**
@@ -191,11 +209,11 @@ public class Particle {
      * @param height the current height of the world
      */
     public void move(int width, int height) {
-        this.x += dx;
-        this.y += dy;
+        this.x += vx*dt + dx;
+        this.y += vy*dt + dy;
         this.edgeCollide(width, height);
         dx = 0;
-        dy = 0; 
+        dy = 0;
     }
     
     /**
@@ -269,15 +287,13 @@ public class Particle {
     
     /**
      * Applies a displacement to the particle 
-     * @param fx dx
-     * @param fy dy
+     * @param fx fx
+     * @param fy fy
      * @param dt change in time since last call
      */
     public void applyForce(double fx, double fy, double dt){
         this.vx += dt * (fx / this.mass);
         this.vy += dt * (fy / this.mass);
-        this.dx += dt * vx;
-        this.dy += dt * vy;
 //        System.out.println(x + " " + y);
     }
     

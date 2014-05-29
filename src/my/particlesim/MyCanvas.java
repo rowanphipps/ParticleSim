@@ -43,10 +43,14 @@ public class MyCanvas extends java.awt.Canvas {
     /**
      * Updates physics for all of the particles.
      * @param deltaT Physics delta t
+     * @param gravity Sets whether or not to simulate gravity
+     * @param electro Sets whether or not to simulate electrostatic forces 
+     * @param collision Sets whether or not particles collide
      */
-    public void updateP(int deltaT) {
+    public void updateP(int deltaT, boolean gravity, boolean electro, boolean collision) {
         particles.parallelStream().forEach((p) -> {
-            p.update(particles, deltaT, this.getWidth(), this.getHeight());
+            p.update(particles, deltaT, this.getWidth(), this.getHeight(),
+                    gravity, electro, collision);
         });
         particles.stream().forEach((p) -> {
             p.move(this.getWidth(), this.getHeight());
