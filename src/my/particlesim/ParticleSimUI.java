@@ -1,7 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2014 Rowan Phipps
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package my.particlesim;
@@ -15,7 +26,7 @@ import javax.swing.Timer;
  * @author rowan
  */
 public class ParticleSimUI extends javax.swing.JFrame {
-    
+
 //    private ParticleCollection particles;
 //    private ArrayList<Particle> particles = new ArrayList<Particle>();
     private static final int fps = 16;//16
@@ -28,27 +39,26 @@ public class ParticleSimUI extends javax.swing.JFrame {
     public ParticleSimUI() {
 //        this.particles = new ParticleCollection(worldSpace);
         initComponents();
-        
+
 //        Timer t = new Timer(1000/fps, particles);
-        
         // physics timer
         Timer t;
         t = new Timer(PhysDt, (ActionEvent evt) -> {
             Graphics g = worldSpace.getGraphics();
             worldSpace.updateP(PhysDt, gravitySelect.isSelected(),
                     electroSelect.isSelected(), collisionSelect.isSelected()
-           );
+            );
         });
-        
+
         // graphics timer
         Timer tg;
         tg = new Timer(fps, (ActionEvent evt) -> {
             Graphics g = worldSpace.getGraphics();
             worldSpace.update(g);
         });
-        
+
         tg.start();
-        
+
         t.start();
     }
 
@@ -83,7 +93,7 @@ public class ParticleSimUI extends javax.swing.JFrame {
         jLabel3.setText("Mass");
 
         massSlider.setMajorTickSpacing(10);
-        massSlider.setMaximum(150);
+        massSlider.setMaximum(300);
         massSlider.setMinimum(1);
         massSlider.setValue(100);
 
@@ -212,14 +222,14 @@ public class ParticleSimUI extends javax.swing.JFrame {
     }//GEN-LAST:event_resetButtonMouseClicked
 
     private void worldSpaceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_worldSpaceMouseClicked
-        worldSpace.add(new Particle(massSlider.getValue(), chargeSlider.getValue(),evt.getPoint()));
-//        worldSpace.log();
+        worldSpace.add(new Particle(massSlider.getValue(), chargeSlider.getValue(), evt.getPoint()));
+        worldSpace.log();
     }//GEN-LAST:event_worldSpaceMouseClicked
 
     private void resetChargeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_resetChargeMouseClicked
         chargeSlider.setValue(0);
     }//GEN-LAST:event_resetChargeMouseClicked
-    
+
 //    private void moveParticles(ActionEvent evt) {
 //        Graphics g = worldSpace.getGraphics();
 ////        for (Particle p: particles) {
@@ -248,9 +258,7 @@ public class ParticleSimUI extends javax.swing.JFrame {
         }
         //</editor-fold>
         /* Create and display the form */
-        
-        
-        
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {

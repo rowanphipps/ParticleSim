@@ -128,7 +128,7 @@
     <Component class="javax.swing.JSlider" name="massSlider">
       <Properties>
         <Property name="majorTickSpacing" type="int" value="10"/>
-        <Property name="maximum" type="int" value="150"/>
+        <Property name="maximum" type="int" value="300"/>
         <Property name="minimum" type="int" value="1"/>
         <Property name="value" type="int" value="100"/>
       </Properties>

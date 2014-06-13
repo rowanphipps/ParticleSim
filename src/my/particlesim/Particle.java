@@ -1,23 +1,39 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+ * Copyright (C) 2014 Rowan Phipps
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 package my.particlesim;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+
 /**
- *
- * @author rowan
+ * A charged particle
+ * @author Rowan
  */
 public class Particle {
     private final double k = 0.025;     // coulomb's constant
     private final double g = 0.0005;    // universal gravitational constant
-    private final double c = 0.5;   // coefficient of restitution for collisions with walls
-    private final double cR = 0.005;  // co. of r. for collisions with other particles
+    private final double c = 0.6;   // coefficient of restitution for collisions with walls
+    private final double collisionElasticConstant = 0.001;  // co. of r. for collisions with other particles
+    private final double coefRestitution = 0.6;
+    private final double distanceExponent = 0.7;
     private final short mass;
     private final short charge;
     private Color col;
@@ -25,11 +41,14 @@ public class Particle {
     private double vy = 0;
     private double x;
     private double y;
-    private final int size;
-    private double dy = 0;
-    private double dx = 0;
+    private final int size; // diameter
+    public double dy = 0;
+    public double dx = 0;
     private int id;
     private double dt;
+    private Image sprite;
+//    private boolean collidedLast = false;
+//    private boolean collidedThisFrame = false;
 //    public int height = 0;
 //    public int width = 0;
     
@@ -47,6 +66,7 @@ public class Particle {
         this.setColor();
         this.x = p.x;
         this.y = p.y;
+        this.buildSprite();
     }
     
     /**
@@ -63,6 +83,7 @@ public class Particle {
         this.setColor();
         this.x = x;
         this.y = y;
+        this.buildSprite();
     }
     
     /**
@@ -86,6 +107,16 @@ public class Particle {
         }
     }
     
+    /**
+     * Creates the sprite that will be drawn for this particle base on the color and size
+     */
+    private void buildSprite() {
+        this.sprite = new BufferedImage(this.size, this.size, BufferedImage.TYPE_4BYTE_ABGR);
+        Graphics graph = this.sprite.getGraphics();
+        graph.setColor(this.col);
+        graph.fillOval(0, 0, size, size);
+    }
+    
     
     /**
      * Calculates physics for the particle
@@ -102,21 +133,26 @@ public class Particle {
             boolean gravity, boolean electro, boolean collision) {
         double T = (1.0 / dt);
         this.dt = T;
+        boolean collided;
         for (int i = this.id+1; i < others.size(); i++) {
             Particle other = others.get(i);
             double d = Math.sqrt(
                     Math.pow(this.x - other.x, 2) +
                             Math.pow(this.y-other.y, 2));
+            collided = this.hasCollided(other, d);
+           
             
-            if (collision && this.hasCollided(other, d)) {
+            if (collision && collided) {
+//                this.vx += 0.00001;
+//                this.vy += 0.00001;
                 this.collide(other, d);
-//                other.collide(this, d);
+                other.collide(this, d);
             }
              
-            if (gravity) {
+            if (gravity && !collided) {
                 doGravity(d, other, T);
             }
-            if (electro) {
+            if (electro && !collided) {
                 doElectro(d, other, T);
             }
             
@@ -171,34 +207,75 @@ public class Particle {
         other.applyForce(-fx, -fy, T);
     }
     
+    /**
+     * Handles collisions between two particles
+     * @param other the other particle
+     * @param d the distance between them
+     */
     public void collide(Particle other, double d) {
-        /* 
-        if two particles are inside each other then all this will do
-        is to dampen the velocities of the particles.  It does not currently
-        turn the particles into solid objects.  this is a problem.
-        */
-//        double nvx = (this.mass*this.vx + other.mass*other.vx
-//                + other.getMass() * cR * (other.vx - this.vx))
-//                /(this.mass + other.getMass());
-//        double nvy = (this.mass*this.vy + other.mass*other.vy
-//                + other.getMass() * cR * (other.vy - this.vy))
-//                / (this.mass + other.getMass());
-//        
-//        double newNetV = Math.sqrt(Math.pow(nvx, 2) + Math.pow(nvy,2));
-//        
-//        double overLap = d - (this.size/2 - other.getSize()/2);
-//        double moveBy = overLap * (this.getMass() / (this.getMass() + other.getMass()));
-//        dx += Math.signum(nvx) * moveBy * (nvx / newNetV);
-//        dy += Math.signum(nvy) * moveBy * (nvy / newNetV);
-//        vy = nvy;
-//        vx = nvx;
-        double fy = this.cR * (this.y-other.y) * ((this.size * other.getSize())
-                / Math.pow(d, 0.5));
-        double fx = this.cR * (this.x-other.x) * ((this.size * other.getSize())
-                / Math.pow(d, 0.5));
+        /*
+        double nvx = (this.mass*this.vx + other.mass*other.getVx()
+                + other.getMass() * coefRestitution * (other.getVx() - this.vx))
+                /(this.mass + other.getMass());
+                
+                double nvy = (this.mass*this.vy + other.getMass()*other.getVy()
+                + other.getMass() * coefRestitution * (other.getVy() - this.vy))
+                / (this.mass + other.getMass());
+                
+                
+                double otherX = (other.getMass()*other.getVx() + this.mass*this.vx
+                + this.getMass() * coefRestitution * (this.getVx() - other.getVx()))
+                /(other.getMass() + this.getMass());
+                
+                double otherY = (other.getMass()*other.getVy() + this.mass*this.vy
+                + this.getMass() * coefRestitution * (this.vy - other.getVy()))
+                / (other.getMass() + this.mass);
+                
+                if (this.vx < other.getVx()) {
+                this.dx += (nvx/(nvx + otherX)) * (other.x - this.x);
+                other.dx += (otherX/(nvx + otherX)) * (other.x - this.x);
+                }
+                else {
+                this.dx += (nvx/(nvx + otherX)) * (this.x - other.x);
+                other.dx += (otherX/(nvx + otherX)) * (this.x - other.x);
+                }
+                
+                
+                
+                if (this.vy < other.getVy()) {
+                this.dy += (nvy/(nvy + otherY)) * (other.y - this.y);
+                other.dy += (otherY/(nvy + otherY)) * (other.y - this.y);
+                }
+                else {
+                this.dy += (nvy/(nvy + otherY)) * (this.y - other.y);
+                other.dy += (otherY/(nvy + otherY)) * (this.y - other.y);
+                }
+                
+                
+                this.setV(nvx, nvy);
+                other.setV(otherX, otherY);
+                */
+                double nvx = -(this.mass*this.vx + other.mass*other.vx
+                        + other.getMass() * collisionElasticConstant * (other.vx - this.vx))
+                        /(this.mass + other.getMass());
+                double nvy = -(this.mass*this.vy + other.mass*other.vy
+                        + other.getMass() * collisionElasticConstant * (other.vy - this.vy))
+                        / (this.mass + other.getMass());
+//                dx = (dt * vx) * Math.signum(nvx);
+//                dy = (dt * vy) * Math.signum(nvy);
+                vy = nvy;
+                vx = nvx;
+                
+          // wrong
+                  
+        double fy = this.collisionElasticConstant * (this.y-other.y) * ((this.mass * other.getMass())
+                / Math.pow(d, distanceExponent));
+        double fx = this.collisionElasticConstant * (this.x-other.x) * ((this.mass * other.getMass())
+                / Math.pow(d, distanceExponent));
      
         this.applyForce(fx, fy, dt);
-        other.applyForce(-fx, -fy, dt);
+//        other.applyForce(-fx, -fy, dt);
+
     }
     
     /**
@@ -225,21 +302,21 @@ public class Particle {
      */
     private void edgeCollide(int width, int height){
         int r = size/2;
-        if (x <= 0) {
-            x = -x + r;
+        if (x <= 0+r) {
+            x = 0 + r;
             vx = - vx *c;
         }
-        else if (x >= width) {
-            x = width - (x - width) -r;
+        else if (x >= width-r) {
+            x = width -r;
             vx = -vx *c;
         }
         
-        if (y <= 0) {
-            y = -y + r;
+        if (y <= 0+r) {
+            y = + r;
             vy = - vy *c;
         }
-        else if (y >= height) {
-            y = height - r - (y - height);
+        else if (y >= height-r) {
+            y = height - r;
             vy = -vy *c;
         }
     }
@@ -249,8 +326,9 @@ public class Particle {
      * @param g the graphics object of the canvas
      */
     public void draw(Graphics g){
-        g.setColor(this.col);
-        g.fillOval((int)this.x-size/2, (int) this.y-size/2, size, size);
+//        g.setColor(this.col);
+//        g.fillOval((int)this.x-size/2, (int) this.y-size/2, size, size);
+        g.drawImage(sprite, (int)this.x-size/2, (int) this.y-size/2, null);
         
     }
     
@@ -295,7 +373,31 @@ public class Particle {
         this.vx += dt * (fx / this.mass);
         this.vy += dt * (fy / this.mass);
 //        System.out.println(x + " " + y);
+    } 
+    
+    /**
+     * Sets the velocity of the particle
+     * @param vx x component of velocity
+     * @param vy y component of velocity
+     */
+    public void setV(double vx, double vy) {
+        this.vx = vx;
+        this.vy = vy;
+    }  
+    
+    public double getVy() {
+        return this.vy;
     }
     
+    public double getVx() {
+        return this.vx;
+    }
     
+    public double getX() {
+        return this.x;
+    }
+    
+    public double getY() {
+        return this.y;
+    }
 }
