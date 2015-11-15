@@ -25,6 +25,11 @@ import java.util.ArrayList;
 
 /**
  * A charged particle
+ * Note that the universal constants used for the physics calculations do not in
+ * proportion to any actually real world values.  The values for k and g are
+ * many orders of magnitude larger than they should be and one pixel is treated
+ * as one meter.  This is because the numbers were chosen to make the simulation
+ * look interesting rather than accurate.
  * @author Rowan
  */
 public class Particle {
@@ -47,10 +52,6 @@ public class Particle {
     private int id;
     private double dt;
     private Image sprite;
-//    private boolean collidedLast = false;
-//    private boolean collidedThisFrame = false;
-//    public int height = 0;
-//    public int width = 0;
     
     
     /**

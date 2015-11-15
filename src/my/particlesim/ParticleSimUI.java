@@ -26,26 +26,20 @@ import javax.swing.Timer;
  * @author rowan
  */
 public class ParticleSimUI extends javax.swing.JFrame {
-
-//    private ParticleCollection particles;
-//    private ArrayList<Particle> particles = new ArrayList<Particle>();
-    private static final int fps = 16;//16
-    private static final int PhysDt = 1;// 1
-//    private Timer t = new Timer
+    private static final int fps = 16;   // milliseconds
+    private static final int PhysDt = 1; // 1milliseconds
 
     /**
      * Creates new form ParticleSimUI
      */
     public ParticleSimUI() {
-//        this.particles = new ParticleCollection(worldSpace);
         initComponents();
 
-//        Timer t = new Timer(1000/fps, particles);
         // physics timer
         Timer t;
         t = new Timer(PhysDt, (ActionEvent evt) -> {
             Graphics g = worldSpace.getGraphics();
-            worldSpace.updateP(PhysDt, gravitySelect.isSelected(),
+            worldSpace.updatePhysics(PhysDt, gravitySelect.isSelected(),
                     electroSelect.isSelected(), collisionSelect.isSelected()
             );
         });
@@ -213,6 +207,9 @@ public class ParticleSimUI extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        worldSpace.getAccessibleContext().setAccessibleName("");
+        worldSpace.getAccessibleContext().setAccessibleDescription("");
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -230,16 +227,6 @@ public class ParticleSimUI extends javax.swing.JFrame {
         chargeSlider.setValue(0);
     }//GEN-LAST:event_resetChargeMouseClicked
 
-//    private void moveParticles(ActionEvent evt) {
-//        Graphics g = worldSpace.getGraphics();
-////        for (Particle p: particles) {
-////            p.update(particles);
-////        }
-//        p.draw(g);
-//    }
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
